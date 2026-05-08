@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КиноПортал | Фильмы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .page-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 60px 0; text-align: center; }
+        .filter-bar { margin-bottom: 32px; padding: 16px 0; border-bottom: 1px solid #222; }
+        .filter-group { display: flex; gap: 16px; flex-wrap: wrap; }
+        .filter-select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; }
+        .movie-card {
+            background: #141414;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid #2a2a2a;
+        }
+        .movie-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-color: #e50914; }
+        .movie-poster { position: relative; aspect-ratio: 2/3; overflow: hidden; background: #1a1a1a; }
+        .movie-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .movie-card:hover .movie-poster img { transform: scale(1.05); }
+        .movie-rating {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .movie-rating i { color: #ffc107; margin-right: 4px; }
+        .movie-info { padding: 14px; }
+        .movie-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-year { font-size: 0.7rem; color: #888; }
+        @media (max-width: 768px) {
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo"><a href="/"><i class="fas fa-film"></i> КиноПортал</a></div>
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li><a href="/">Главная</a></li>
+                    <li><a href="/movies" class="active">Фильмы</a></li>
+                    <li><a href="/series">Сериалы</a></li>
+                    <li><a href="/search">Поиск</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="search-btn" id="searchToggle"><i class="fas fa-search"></i></button>
+                <button class="user-btn"><i class="fas fa-user-circle"></i></button>
+                <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+        <div class="search-bar" id="searchBar">
+            <div class="container search-container">
+                <input type="text" id="searchInput" placeholder="Поиск...">
+                <button id="closeSearch"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+        <ul class="mobile-nav-list">
+            <li><a href="/">Главная</a></li>
+            <li><a href="/movies">Фильмы</a></li>
+            <li><a href="/series">Сериалы</a></li>
+            <li><a href="/search">Поиск</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <section class="page-header">
+            <div class="container"><h1>Фильмы</h1><p>Большая коллекция фильмов на любой вкус</p></div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <select class="filter-select" id="genreFilter"><option value="all">Все жанры</option></select>
+                        <select class="filter-select" id="yearFilter"><option value="all">Все годы</option></select>
+                    </div>
+                </div>
+                <div class="movie-grid" id="allMoviesGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-col"><div class="logo footer-logo"><i class="fas fa-film"></i> КиноПортал</div><p>Онлайн-кинотеатр</p></div>
+        </div>
+        <div class="footer-bottom"><div class="container"><p>&copy; 2025 КиноПортал</p></div></div>
+    </footer>
+
+    <script>
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const mobileNav = document.getElementById('mobileNav');
+        const searchToggle = document.getElementById('searchToggle');
+        const searchBar = document.getElementById('searchBar');
+        const closeSearch = document.getElementById('closeSearch');
+        
+        if(mobileToggle) mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('active'));
+        if(searchToggle) searchToggle.addEventListener('click', () => searchBar.classList.toggle('active'));
+        if(closeSearch) closeSearch.addEventListener('click', () => searchBar.classList.remove('active'));
+
+        const allMovies = [
+            {id:1, title:"Оппенгеймер", year:2023, rating:8.9, genre:"Драма"},
+            {id:2, title:"Дюна 2", year:2024, rating:8.7, genre:"Фантастика"},
+            {id:3, title:"Джон Уик 4", year:2023, rating:8.5, genre:"Боевик"},
+            {id:4, title:"Барби", year:2023, rating:7.8, genre:"Комедия"},
+            {id:5, title:"Наполеон", year:2023, rating:7.2, genre:"Драма"},
+            {id:6, title:"Аквамен 2", year:2023, rating:6.9, genre:"Фантастика"}
+        ];
+
+        // Загрузка жанров
+        const genreSelect = document.getElementById('genreFilter');
+        const genres = [...new Set(allMovies.map(m => m.genre))];
+        genres.forEach(g => genreSelect.innerHTML += `<option value="${g}">${g}</option>`);
+
+        const yearSelect = document.getElementById('yearFilter');
+        const years = [...new Set(allMovies.map(m => m.year))].sort((a,b)=>b-a);
+        years.forEach(y => yearSelect.innerHTML += `<option value="${y}">${y}</option>`);
+
+        function renderMovies(movies) {
+            const container = document.getElementById('allMoviesGrid');
+            container.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="location.href='/movie/${movie.id}'">
+                    <div class="movie-poster">
+                        <img src="/api/banner/movie/${movie.id}" alt="${movie.title}">
+                        <div class="movie-rating"><i class="fas fa-star"></i> ${movie.rating}</div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title}</div>
+                        <div class="movie-year">${movie.year}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMovies() {
+            const genre = document.getElementById('genreFilter').value;
+            const year = document.getElementById('yearFilter').value;
+            let filtered = [...allMovies];
+            if(genre !== 'all') filtered = filtered.filter(m => m.genre === genre);
+            if(year !== 'all') filtered = filtered.filter(m => m.year == year);
+            renderMovies(filtered);
+        }
+
+        document.getElementById('genreFilter').addEventListener('change', filterMovies);
+        document.getElementById('yearFilter').addEventListener('change', filterMovies);
+        renderMovies(allMovies);
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КиноПортал | Сериалы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .page-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 60px 0; text-align: center; }
+        .filter-bar { margin-bottom: 32px; padding: 16px 0; border-bottom: 1px solid #222; }
+        .filter-group { display: flex; gap: 16px; flex-wrap: wrap; }
+        .filter-select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; }
+        .movie-card {
+            background: #141414;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid #2a2a2a;
+        }
+        .movie-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.5); border-color: #e50914; }
+        .movie-poster { position: relative; aspect-ratio: 2/3; overflow: hidden; background: #1a1a1a; }
+        .movie-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .movie-card:hover .movie-poster img { transform: scale(1.05); }
+        .movie-rating {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .movie-rating i { color: #ffc107; margin-right: 4px; }
+        .movie-info { padding: 14px; }
+        .movie-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-year { font-size: 0.7rem; color: #888; }
+        @media (max-width: 768px) {
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo"><a href="/"><i class="fas fa-film"></i> КиноПортал</a></div>
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li><a href="/">Главная</a></li>
+                    <li><a href="/movies">Фильмы</a></li>
+                    <li><a href="/series" class="active">Сериалы</a></li>
+                    <li><a href="/search">Поиск</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="search-btn" id="searchToggle"><i class="fas fa-search"></i></button>
+                <button class="user-btn"><i class="fas fa-user-circle"></i></button>
+                <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+        <div class="search-bar" id="searchBar">
+            <div class="container search-container">
+                <input type="text" id="searchInput" placeholder="Поиск...">
+                <button id="closeSearch"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+        <ul class="mobile-nav-list">
+            <li><a href="/">Главная</a></li>
+            <li><a href="/movies">Фильмы</a></li>
+            <li><a href="/series">Сериалы</a></li>
+            <li><a href="/search">Поиск</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <section class="page-header">
+            <div class="container"><h1>Сериалы</h1><p>Лучшие сериалы всех времён</p></div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <select class="filter-select" id="genreFilter"><option value="all">Все жанры</option></select>
+                        <select class="filter-select" id="yearFilter"><option value="all">Все годы</option></select>
+                    </div>
+                </div>
+                <div class="movie-grid" id="allSeriesGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">...</footer>
+
+    <script>
+        // Мобильное меню
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const mobileNav = document.getElementById('mobileNav');
+        const searchToggle = document.getElementById('searchToggle');
+        const searchBar = document.getElementById('searchBar');
+        const closeSearch = document.getElementById('closeSearch');
+        if(mobileToggle) mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('active'));
+        if(searchToggle) searchToggle.addEventListener('click', () => searchBar.classList.toggle('active'));
+        if(closeSearch) closeSearch.addEventListener('click', () => searchBar.classList.remove('active'));
+
+        const allSeries = [
+            {id:1, title:"Одни из нас", year:2023, rating:8.9, genre:"Драма"},
+            {id:2, title:"Медведь", year:2022, rating:8.5, genre:"Комедия"},
+            {id:3, title:"Сёгун", year:2024, rating:9.0, genre:"Драма"},
+            {id:4, title:"Наследники", year:2018, rating:8.8, genre:"Драма"},
+            {id:5, title:"Фоллаут", year:2024, rating:8.7, genre:"Фантастика"},
+            {id:6, title:"Дом Дракона", year:2022, rating:8.9, genre:"Фэнтези"},
+            {id:7, title:"Корона", year:2016, rating:8.6, genre:"Драма"},
+            {id:8, title:"Острые козырьки", year:2013, rating:8.9, genre:"Криминал"},
+            {id:9, title:"Странные дела", year:2016, rating:8.7, genre:"Ужасы"},
+            {id:10, title:"Белый лотос", year:2021, rating:8.3, genre:"Драма"}
+        ];
+
+        const genreSelect = document.getElementById('genreFilter');
+        const genres = [...new Set(allSeries.map(s => s.genre))];
+        genres.forEach(g => genreSelect.innerHTML += `<option value="${g}">${g}</option>`);
+
+        const yearSelect = document.getElementById('yearFilter');
+        const years = [...new Set(allSeries.map(s => s.year))].sort((a,b)=>b-a);
+        years.forEach(y => yearSelect.innerHTML += `<option value="${y}">${y}</option>`);
+
+        function renderSeries(series) {
+            const container = document.getElementById('allSeriesGrid');
+            container.innerHTML = series.map(s => `
+                <div class="movie-card" onclick="location.href='/series/${s.id}'">
+                    <div class="movie-poster">
+                        <img src="/api/banner/series/${s.id}" alt="${s.title}">
+                        <div class="movie-rating"><i class="fas fa-star"></i> ${s.rating}</div>
+                    </div>
+                    <div class="movie-info">
+                        <div class="movie-title">${s.title}</div>
+                        <div class="movie-year">${s.year}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterSeries() {
+            const genre = document.getElementById('genreFilter').value;
+            const year = document.getElementById('yearFilter').value;
+            let filtered = [...allSeries];
+            if(genre !== 'all') filtered = filtered.filter(s => s.genre === genre);
+            if(year !== 'all') filtered = filtered.filter(s => s.year == year);
+            renderSeries(filtered);
+        }
+
+        document.getElementById('genreFilter').addEventListener('change', filterSeries);
+        document.getElementById('yearFilter').addEventListener('change', filterSeries);
+        renderSeries(allSeries);
+    </script>
+</body>
+</html>

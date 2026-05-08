@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КиноПортал | Главная</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo"><a href="/"><i class="fas fa-film"></i> КиноПортал</a></div>
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li><a href="/" class="active">Главная</a></li>
+                    <li><a href="/movies">Фильмы</a></li>
+                    <li><a href="/series">Сериалы</a></li>
+                    <li><a href="/search">Поиск</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="search-btn" id="searchToggle"><i class="fas fa-search"></i></button>
+                <button class="user-btn"><i class="fas fa-user-circle"></i></button>
+                <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+        <div class="search-bar" id="searchBar">
+            <div class="container search-container">
+                <input type="text" id="searchInput" placeholder="Поиск...">
+                <button id="closeSearch"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+        <ul class="mobile-nav-list">
+            <li><a href="/">Главная</a></li>
+            <li><a href="/movies">Фильмы</a></li>
+            <li><a href="/series">Сериалы</a></li>
+            <li><a href="/search">Поиск</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <section class="hero">
+            <div class="hero-slide" style="background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 100%), #1a1a2e;">
+                <div class="container hero-content">
+                    <span class="hero-badge">Хит просмотров</span>
+                    <h1 class="hero-title">Оппенгеймер</h1>
+                    <div class="hero-meta">
+                        <span><i class="fas fa-calendar-alt"></i> 2023</span>
+                        <span><i class="fas fa-star"></i> 8.9</span>
+                        <span><i class="fas fa-clock"></i> 180 мин</span>
+                    </div>
+                    <p class="hero-description">История создателя атомной бомбы</p>
+                    <button class="btn btn-primary"><i class="fas fa-play"></i> Смотреть</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-fire"></i> Популярные фильмы</h2>
+                    <a href="/movies" class="view-all">Все фильмы <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="movie-grid" id="moviesGrid"></div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-tv"></i> Лучшие сериалы</h2>
+                    <a href="/series" class="view-all">Все сериалы <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="movie-grid" id="seriesGridHome"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <div class="logo"><i class="fas fa-film"></i> КиноПортал</div>
+                <p>Онлайн-кинотеатр с лучшими фильмами</p>
+            </div>
+        </div>
+        <div class="footer-bottom"><div class="container"><p>&copy; 2025 КиноПортал</p></div></div>
+    </footer>
+
+    <script>
+        const movies = [
+            {id:1, title:"Оппенгеймер", year:"2023", rating:"8.9"},
+            {id:2, title:"Дюна 2", year:"2024", rating:"8.7"},
+            {id:3, title:"Джон Уик 4", year:"2023", rating:"8.5"}
+        ];
+
+        const series = [
+            {id:1, title:"Одни из нас", year:"2023", rating:"8.9"},
+            {id:2, title:"Медведь", year:"2022", rating:"8.5"},
+            {id:3, title:"Сёгун", year:"2024", rating:"9.0"}
+        ];
+
+        function renderGrid(id, items, type) {
+            const container = document.getElementById(id);
+            if(!container) return;
+            container.innerHTML = items.map(item => `
+                <div class="movie-card" onclick="location.href='/${type}/${item.id}'">
+                    <div class="movie-poster">
+                        <img src="/api/banner/${type}/${item.id}" alt="${item.title}" style="background:#1a1a1a;">
+                        <div class="movie-rating"><i class="fas fa-star"></i> ${item.rating}</div>
+                    </div>
+                    <div class="movie-info"><h3>${item.title}</h3><div>${item.year}</div></div>
+                </div>
+            `).join('');
+        }
+
+        renderGrid('moviesGrid', movies, 'movie');
+        renderGrid('seriesGridHome', series, 'series');
+
+        // Мобильное меню
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const mobileNav = document.getElementById('mobileNav');
+        if(mobileToggle) mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('active'));
+    </script>
+</body>
+</html>

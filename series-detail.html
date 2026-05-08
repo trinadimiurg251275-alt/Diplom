@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>КиноПортал | Сериал</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #ffffff; line-height: 1.5; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+        
+        /* ШАПКА */
+        .header { position: sticky; top: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; }
+        .logo a { font-size: 1.5rem; font-weight: 800; color: #e50914; text-decoration: none; }
+        .logo i { margin-right: 8px; }
+        .nav-list { display: flex; gap: 32px; list-style: none; }
+        .nav-list a { color: #ffffff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+        .nav-list a:hover, .nav-list a.active { color: #e50914; }
+        .header-actions { display: flex; gap: 16px; }
+        .header-actions button { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .header-actions button:hover { color: #e50914; }
+        .mobile-menu-btn { display: none; }
+        
+        /* ПОИСК */
+        .search-bar { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #141414; }
+        .search-bar.active { max-height: 80px; }
+        .search-container { display: flex; align-items: center; gap: 12px; padding: 16px 20px; }
+        .search-container input { flex: 1; padding: 12px 16px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: white; }
+        .search-container input:focus { outline: none; border-color: #e50914; }
+        
+        /* МОБИЛЬНОЕ МЕНЮ */
+        .mobile-nav { position: fixed; top: 0; left: -100%; width: 80%; max-width: 300px; height: 100vh; background: #0a0a0a; z-index: 2000; padding: 80px 24px 24px; transition: left 0.3s ease; }
+        .mobile-nav.active { left: 0; }
+        .mobile-nav-list { list-style: none; }
+        .mobile-nav-list li { margin-bottom: 24px; }
+        .mobile-nav-list a { color: white; text-decoration: none; font-size: 1.2rem; }
+        
+        /* HERO СЕКЦИЯ С БАННЕРОМ */
+        .detail-hero { min-height: 450px; background-size: cover; background-position: center 30%; position: relative; }
+        .detail-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.4) 100%); }
+        .detail-content { position: relative; z-index: 2; padding: 50px 0; }
+        .detail-info { max-width: 650px; }
+        .detail-title { font-size: 2.8rem; font-weight: 800; margin-bottom: 16px; }
+        .detail-meta { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; color: #ccc; font-size: 0.9rem; }
+        .detail-meta i { margin-right: 6px; }
+        .age-rating { border: 1px solid #666; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .genres { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .genre-tag { background: rgba(229,9,20,0.2); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; color: #e50914; }
+        .description-text { color: #ddd; line-height: 1.6; margin-bottom: 25px; max-width: 550px; }
+        .back-link { display: inline-block; margin: 20px 0 10px; color: #e50914; text-decoration: none; font-size: 0.9rem; }
+        .back-link:hover { text-decoration: underline; }
+        
+        /* КАСТОМНЫЙ ПЛЕЕР ДЛЯ СЕРИАЛОВ */
+        .player-section { margin: 20px auto 40px; max-width: 960px; }
+        .custom-player { background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        .video-container { position: relative; background: #000; }
+        .video-container video { width: 100%; aspect-ratio: 16/9; display: block; cursor: pointer; }
+        .player-controls {
+            background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.8));
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            transition: opacity 0.3s ease;
+        }
+        .custom-player:fullscreen .player-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        .custom-player:fullscreen .player-controls.hide-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .ctrl-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .ctrl-btn:hover { background: rgba(255,255,255,0.2); color: #e50914; transform: scale(1.1); }
+        .progress-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.3); border-radius: 5px; cursor: pointer; position: relative; }
+        .progress-filled { width: 0%; height: 100%; background: #e50914; border-radius: 5px; position: relative; }
+        .progress-filled::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #e50914;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .progress-bar:hover .progress-filled::after { opacity: 1; }
+        .time-display { color: white; font-size: 0.85rem; font-family: monospace; min-width: 100px; }
+        .season-select, .episode-select {
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #444;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .season-select:hover, .episode-select:hover { border-color: #e50914; }
+        .volume-control { display: flex; align-items: center; gap: 8px; }
+        .volume-slider { width: 80px; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.3); border-radius: 5px; cursor: pointer; }
+        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #e50914; border-radius: 50%; cursor: pointer; }
+        .video-placeholder {
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #888;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .video-placeholder i { font-size: 4rem; color: #e50914; opacity: 0.5; }
+        
+        /* ИНФОРМАЦИЯ О СЕЗОНАХ */
+        .seasons-info { background: #1a1a1a; padding: 20px; border-radius: 12px; margin: 20px 0; }
+        .seasons-info h3 { margin-bottom: 10px; }
+        .seasons-info h3 i { color: #e50914; margin-right: 8px; }
+        
+        /* АКТЁРЫ */
+        .persons-section { margin-top: 30px; padding: 20px 0; }
+        .section-title { font-size: 1.5rem; margin-bottom: 20px; }
+        .section-title i { color: #e50914; margin-right: 10px; }
+        .persons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .person-card { background: #1a1a1a; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.3s; text-decoration: none; color: white; display: block; }
+        .person-card:hover { transform: translateY(-5px); background: #222; }
+        .person-photo { width: 100%; aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #e50914; }
+        .person-info { padding: 12px; }
+        .person-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+        .person-role { font-size: 0.7rem; color: #e50914; }
+        
+        /* ПОДВАЛ */
+        .footer { background: #050505; padding-top: 40px; margin-top: 40px; }
+        .footer-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; padding-bottom: 30px; }
+        .footer-logo { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: #e50914; }
+        .footer-col p { color: #888; font-size: 0.85rem; }
+        .footer-bottom { border-top: 1px solid #1a1a1a; padding: 20px 0; text-align: center; color: #666; font-size: 0.8rem; }
+        
+        @media (max-width: 768px) {
+            .main-nav { display: none; }
+            .mobile-menu-btn { display: block; }
+            .detail-title { font-size: 1.8rem; }
+            .player-controls { gap: 8px; padding: 10px; }
+            .ctrl-btn { width: 32px; height: 32px; font-size: 1rem; }
+            .time-display { font-size: 0.7rem; min-width: 70px; }
+            .season-select, .episode-select { font-size: 0.7rem; padding: 4px 8px; }
+            .persons-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo"><a href="/"><i class="fas fa-film"></i> КиноПортал</a></div>
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li><a href="/">Главная</a></li>
+                    <li><a href="/movies">Фильмы</a></li>
+                    <li><a href="/series">Сериалы</a></li>
+                    <li><a href="/search">Поиск</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="search-btn" id="searchToggle"><i class="fas fa-search"></i></button>
+                <button class="user-btn"><i class="fas fa-user-circle"></i></button>
+                <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+        <div class="search-bar" id="searchBar">
+            <div class="container search-container">
+                <input type="text" id="searchInput" placeholder="Поиск фильмов, сериалов...">
+                <button id="closeSearch"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+        <ul class="mobile-nav-list">
+            <li><a href="/">Главная</a></li>
+            <li><a href="/movies">Фильмы</a></li>
+            <li><a href="/series">Сериалы</a></li>
+            <li><a href="/search">Поиск</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <div class="container">
+            <a href="/series" class="back-link"><i class="fas fa-arrow-left"></i> Назад к сериалам</a>
+        </div>
+        
+        <div class="detail-hero" id="heroSection">
+            <div class="container detail-content">
+                <div class="detail-info">
+                    <h1 class="detail-title" id="seriesTitle">Загрузка...</h1>
+                    <div class="detail-meta" id="seriesMeta"></div>
+                    <div class="genres" id="genresList"></div>
+                    <p class="description-text" id="seriesDescription"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="player-section">
+                <div class="custom-player" id="customPlayer">
+                    <div class="video-container" id="videoContainer">
+                        <video id="videoPlayer" preload="metadata"></video>
+                    </div>
+                    <div class="player-controls" id="playerControls">
+                        <button class="ctrl-btn" id="playPauseBtn"><i class="fas fa-play"></i></button>
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress-filled" id="progressFilled"></div>
+                        </div>
+                        <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
+                        <select class="season-select" id="seasonSelect"></select>
+                        <select class="episode-select" id="episodeSelect"></select>
+                        <div class="volume-control">
+                            <button class="ctrl-btn" id="volumeBtn"><i class="fas fa-volume-up"></i></button>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+                        </div>
+                        <button class="ctrl-btn fullscreen-btn" id="fullscreenBtn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="seasons-info" id="seasonsInfo"></div>
+
+            <div class="persons-section">
+                <h2 class="section-title"><i class="fas fa-users"></i> Актёры и создатели</h2>
+                <div class="persons-grid" id="personsGrid"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <div class="logo footer-logo"><i class="fas fa-film"></i> КиноПортал</div>
+                <p>Онлайн-кинотеатр с лучшими фильмами и сериалами. Смотрите качественное кино в любое время.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container"><p>&copy; 2025 КиноПортал. Все права защищены.</p></div>
+        </div>
+    </footer>
+
+    <script>
+        const seriesId = window.location.pathname.split('/').pop();
+        let currentSeries = null;
+        let currentSeason = 1;
+        let currentEpisode = 1;
+
+        // Элементы плеера
+        const video = document.getElementById('videoPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressFilled = document.getElementById('progressFilled');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const seasonSelect = document.getElementById('seasonSelect');
+        const episodeSelect = document.getElementById('episodeSelect');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const customPlayer = document.getElementById('customPlayer');
+        const playerControls = document.getElementById('playerControls');
+
+        // Функции плеера
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                video.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '00:00';
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            if (hours > 0) {
+                return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateProgress() {
+            if (video.duration && !isNaN(video.duration)) {
+                const percent = (video.currentTime / video.duration) * 100;
+                progressFilled.style.width = `${percent}%`;
+                timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+            }
+        }
+
+        function seek(e) {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = Math.min(Math.max(0, (e.clientX - rect.left) / rect.width), 1);
+            video.currentTime = percent * video.duration;
+        }
+
+        function updateVolume() {
+            video.volume = parseFloat(volumeSlider.value);
+            if (video.volume === 0) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            } else if (video.volume < 0.5) {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+            } else {
+                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            }
+        }
+
+        function toggleMute() {
+            if (video.volume > 0) {
+                video.volume = 0;
+                volumeSlider.value = 0;
+            } else {
+                video.volume = 1;
+                volumeSlider.value = 1;
+            }
+            updateVolume();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                customPlayer.requestFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                setupFullscreenMouseMove();
+            } else {
+                document.exitFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                playerControls.classList.remove('hide-controls');
+            }
+        }
+
+        function setupFullscreenMouseMove() {
+            let mouseTimer = null;
+            const showControls = () => {
+                playerControls.classList.remove('hide-controls');
+                if (mouseTimer) clearTimeout(mouseTimer);
+                mouseTimer = setTimeout(() => {
+                    if (document.fullscreenElement && !video.paused) {
+                        playerControls.classList.add('hide-controls');
+                    }
+                }, 3000);
+            };
+            document.addEventListener('mousemove', showControls);
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) {
+                    document.removeEventListener('mousemove', showControls);
+                    playerControls.classList.remove('hide-controls');
+                }
+            });
+            showControls();
+        }
+
+        function showPlaceholder() {
+            const container = document.getElementById('videoContainer');
+            container.innerHTML = `
+                <div class="video-placeholder">
+                    <i class="fas fa-video-slash"></i>
+                    <h3>Серия временно недоступна</h3>
+                    <p>Пожалуйста, попробуйте позже или выберите другую серию</p>
+                </div>
+            `;
+            playerControls.style.display = 'flex';
+        }
+
+        async function loadEpisode() {
+            try {
+                const response = await fetch(`/api/video/series/${seriesId}/season/${currentSeason}/episode/${currentEpisode}`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    video.src = data.url;
+                    video.load();
+                    playerControls.style.display = 'flex';
+                } else {
+                    showPlaceholder();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки серии:', error);
+                showPlaceholder();
+            }
+        }
+
+        function updateEpisodes() {
+            const episodesData = {1:10, 2:8, 3:12, 4:10, 5:8, 6:6};
+            const episodes = episodesData[currentSeason] || 10;
+            episodeSelect.innerHTML = '';
+            for (let i = 1; i <= episodes; i++) {
+                episodeSelect.innerHTML += `<option value="${i}">${i} серия</option>`;
+            }
+            episodeSelect.onchange = () => { 
+                currentEpisode = parseInt(episodeSelect.value); 
+                loadEpisode(); 
+            };
+        }
+
+        async function loadSeries() {
+            try {
+                const response = await fetch(`/api/series/${seriesId}`);
+                if (!response.ok) throw new Error('Сериал не найден');
+                const series = await response.json();
+                currentSeries = series;
+                
+                document.title = `${series.title} | КиноПортал`;
+                document.getElementById('seriesTitle').textContent = series.title;
+                document.getElementById('seriesDescription').textContent = series.description;
+                
+                // БАННЕР НА ФОНЕ - используем API баннера
+                document.getElementById('heroSection').style.backgroundImage = `linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.4) 100%), url('/api/banner/series/${seriesId}')`;
+                document.getElementById('heroSection').style.backgroundSize = 'cover';
+                document.getElementById('heroSection').style.backgroundPosition = 'center 30%';
+                
+                const metaHtml = `
+                    <span><i class="fas fa-calendar-alt"></i> ${series.year}</span>
+                    <span><i class="fas fa-star" style="color:#ffc107;"></i> ${series.rating}</span>
+                    <span><i class="fas fa-layer-group"></i> ${series.seasons || 1} сезон</span>
+                    <span><i class="fas fa-video"></i> ${series.episodes || '—'} серий</span>
+                    <span class="age-rating">${series.ageRating || '16+'}</span>
+                `;
+                document.getElementById('seriesMeta').innerHTML = metaHtml;
+                
+                if (series.genres) {
+                    document.getElementById('genresList').innerHTML = series.genres.map(g => `<span class="genre-tag">${g}</span>`).join('');
+                }
+                
+                const maxSeasons = series.seasons || 4;
+                document.getElementById('seasonsInfo').innerHTML = `
+                    <h3><i class="fas fa-calendar-week"></i> Доступные сезоны</h3>
+                    <p>Сериал состоит из ${maxSeasons} сезонов. Выбирайте сезон и серию в плеере выше.</p>
+                `;
+                
+                // Заполняем селектор сезонов
+                seasonSelect.innerHTML = '';
+                for (let i = 1; i <= maxSeasons; i++) {
+                    seasonSelect.innerHTML += `<option value="${i}">${i} сезон</option>`;
+                }
+                seasonSelect.onchange = () => { 
+                    currentSeason = parseInt(seasonSelect.value); 
+                    updateEpisodes(); 
+                    loadEpisode(); 
+                };
+                
+                updateEpisodes();
+                await loadEpisode();
+                
+                const allPersons = [...(series.directorsInfo || []), ...(series.actorsInfo || [])];
+                if (allPersons.length) {
+                    document.getElementById('personsGrid').innerHTML = allPersons.map(person => `
+                        <a href="/person/${person.id}" class="person-card">
+                            <div class="person-photo"><i class="fas fa-user-circle"></i></div>
+                            <div class="person-info">
+                                <div class="person-name">${person.name}</div>
+                                <div class="person-role">${person.role || 'Актёр'}</div>
+                            </div>
+                        </a>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('seriesTitle').textContent = 'Сериал не найден';
+            }
+        }
+
+        // Event listeners
+        playPauseBtn.addEventListener('click', togglePlay);
+        progressBar.addEventListener('click', seek);
+        video.addEventListener('timeupdate', updateProgress);
+        video.addEventListener('loadedmetadata', updateProgress);
+        volumeSlider.addEventListener('input', updateVolume);
+        volumeBtn.addEventListener('click', toggleMute);
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        video.addEventListener('play', () => { playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>'; });
+        video.addEventListener('pause', () => { playPauseBtn.innerHTML = '<i class="fas fa-play"></i>'; });
+
+        // Мобильное меню
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const mobileNav = document.getElementById('mobileNav');
+        const searchToggle = document.getElementById('searchToggle');
+        const searchBar = document.getElementById('searchBar');
+        const closeSearch = document.getElementById('closeSearch');
+        
+        if(mobileToggle) mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('active'));
+        if(searchToggle) searchToggle.addEventListener('click', () => searchBar.classList.toggle('active'));
+        if(closeSearch) closeSearch.addEventListener('click', () => searchBar.classList.remove('active'));
+
+        loadSeries();
+    </script>
+</body>
+</html>

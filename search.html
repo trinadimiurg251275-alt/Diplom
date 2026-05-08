@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КиноПортал | Умный поиск</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        :root {
+            --primary: #e50914;
+            --primary-dark: #b80710;
+            --bg-dark: #0a0a0a;
+            --bg-card: #141414;
+            --border: #2a2a2a;
+        }
+        .search-page { min-height: 100vh; background: var(--bg-dark); }
+        .search-hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0a0a0a 100%);
+            padding: 60px 0 40px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .search-hero h1 { font-size: 2.5rem; margin-bottom: 16px; }
+        .search-hero h1 i { color: var(--primary); margin-right: 12px; }
+        .search-hero p { color: #aaa; max-width: 600px; margin: 0 auto; }
+        .search-input-wrapper {
+            max-width: 700px;
+            margin: 30px auto 0;
+            position: relative;
+        }
+        .search-input-wrapper i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 1.2rem;
+        }
+        .search-main-input {
+            width: 100%;
+            padding: 18px 20px 18px 50px;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 60px;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        .search-main-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(229,9,20,0.2);
+        }
+        .filters-panel {
+            background: var(--bg-card);
+            border-radius: 20px;
+            margin: 30px auto;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .filters-header {
+            padding: 16px 24px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .filters-header h3 { font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .filters-header h3 i { color: var(--primary); }
+        .clear-filters {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: opacity 0.3s;
+        }
+        .clear-filters:hover { opacity: 0.7; }
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            padding: 24px;
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: 600;
+        }
+        .filter-label i { margin-right: 6px; color: var(--primary); }
+        .filter-select, .filter-input {
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-select:hover, .filter-input:hover { border-color: var(--primary); }
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .age-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; }
+        .age-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 6px 12px;
+            background: #1a1a1a;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .age-option:hover { border-color: var(--primary); }
+        .age-option.active { background: var(--primary); border-color: var(--primary); }
+        .age-option input { display: none; }
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .results-count {
+            background: rgba(229,9,20,0.15);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+        .results-count span { font-weight: 700; font-size: 1.1rem; }
+        .search-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px;
+            padding-bottom: 50px;
+        }
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+        .result-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            border-color: var(--primary);
+        }
+        .result-poster { position: relative; aspect-ratio: 2/3; overflow: hidden; }
+        .result-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .result-card:hover .result-poster img { transform: scale(1.05); }
+        .result-type {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+        .result-type.movie { background: #e50914; }
+        .result-type.series { background: #2e7d32; }
+        .result-rating {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .result-rating i { color: #ffc107; margin-right: 4px; }
+        .result-info { padding: 14px; }
+        .result-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .result-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; }
+        .result-genre { font-size: 0.65rem; color: var(--primary); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .no-results { text-align: center; padding: 80px 20px; color: #666; }
+        .no-results i { font-size: 4rem; margin-bottom: 20px; opacity: 0.5; }
+        .loading-spinner { text-align: center; padding: 60px; }
+        .loading-spinner i { font-size: 3rem; color: var(--primary); animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+            .search-hero h1 { font-size: 1.8rem; }
+            .filters-grid { grid-template-columns: 1fr; padding: 16px; }
+            .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-container">
+            <div class="logo"><a href="/"><i class="fas fa-film"></i> КиноПортал</a></div>
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li><a href="/">Главная</a></li>
+                    <li><a href="/movies">Фильмы</a></li>
+                    <li><a href="/series">Сериалы</a></li>
+                    <li><a href="/search" class="active">Поиск</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="search-btn" id="searchToggle"><i class="fas fa-search"></i></button>
+                <button class="user-btn"><i class="fas fa-user-circle"></i></button>
+                <button class="mobile-menu-btn" id="mobileMenuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+        <div class="search-bar" id="searchBar">
+            <div class="container search-container">
+                <input type="text" id="searchInput" placeholder="Поиск фильмов, сериалов...">
+                <button id="closeSearch"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+        <ul class="mobile-nav-list">
+            <li><a href="/">Главная</a></li>
+            <li><a href="/movies">Фильмы</a></li>
+            <li><a href="/series">Сериалы</a></li>
+            <li><a href="/search">Поиск</a></li>
+        </ul>
+    </div>
+
+    <main class="search-page">
+        <div class="search-hero">
+            <div class="container">
+                <h1><i class="fas fa-search"></i> Умный поиск</h1>
+                <p>Найдите фильмы и сериалы по названию, жанру, году, актёру или описанию</p>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-main-input" id="mainSearchInput" placeholder="Поиск по названию, описанию или персоне...">
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="filters-panel">
+                <div class="filters-header">
+                    <h3><i class="fas fa-sliders-h"></i> Фильтры поиска</h3>
+                    <button class="clear-filters" id="clearFiltersBtn"><i class="fas fa-trash-alt"></i> Сбросить все</button>
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label"><i class="fas fa-tag"></i> Тип контента</label>
+                        <select class="filter-select" id="typeFilter">
+                            <option value="all">Все (фильмы и сериалы)</option>
+                            <option value="movie">Только фильмы</option>
+                            <option value="series">Только сериалы</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label"><i class="fas fa-theater-masks"></i> Жанр</label>
+                        <select class="filter-select" id="genreFilter">
+                            <option value="all">Все жанры</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label"><i class="fas fa-calendar"></i> Год выпуска</label>
+                        <select class="filter-select" id="yearFilter">
+                            <option value="all">Все годы</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label"><i class="fas fa-user"></i> Персона (актёр/режиссёр)</label>
+                        <input type="text" class="filter-input" id="personFilter" placeholder="Введите имя...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label"><i class="fas fa-align-left"></i> Поиск по описанию</label>
+                        <input type="text" class="filter-input" id="descriptionFilter" placeholder="Ключевые слова из описания...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label"><i class="fas fa-child"></i> Возрастное ограничение</label>
+                        <div class="age-options" id="ageFilterGroup">
+                            <label class="age-option active" data-age="all">
+                                <input type="radio" name="age" value="all" checked> <span>Все</span>
+                            </label>
+                            <label class="age-option" data-age="0+">
+                                <input type="radio" name="age" value="0+"> <span>0+</span>
+                            </label>
+                            <label class="age-option" data-age="6+">
+                                <input type="radio" name="age" value="6+"> <span>6+</span>
+                            </label>
+                            <label class="age-option" data-age="12+">
+                                <input type="radio" name="age" value="12+"> <span>12+</span>
+                            </label>
+                            <label class="age-option" data-age="16+">
+                                <input type="radio" name="age" value="16+"> <span>16+</span>
+                            </label>
+                            <label class="age-option" data-age="18+">
+                                <input type="radio" name="age" value="18+"> <span>18+</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">Найдено: <span>0</span></div>
+                <div class="results-sort">
+                    <span style="color:#888; font-size:0.8rem;">Сортировка по рейтингу ▼</span>
+                </div>
+            </div>
+
+            <div id="resultsContainer">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner"></i>
+                    <p>Загрузка контента...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <div class="logo footer-logo"><i class="fas fa-film"></i> КиноПортал</div>
+                <p>Умный поиск фильмов и сериалов с расширенными фильтрами</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2025 КиноПортал. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentSearchTimeout = null;
+
+        // Загрузка фильтров с сервера
+        async function loadFilters() {
+            try {
+                const response = await fetch('/api/search/filters');
+                if (!response.ok) throw new Error('Ошибка загрузки фильтров');
+                const filters = await response.json();
+                
+                const genreSelect = document.getElementById('genreFilter');
+                if (filters.genres && filters.genres.length) {
+                    filters.genres.forEach(genre => {
+                        genreSelect.innerHTML += `<option value="${genre}">${genre}</option>`;
+                    });
+                }
+                
+                const yearSelect = document.getElementById('yearFilter');
+                if (filters.years && filters.years.length) {
+                    filters.years.forEach(year => {
+                        yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки фильтров:', error);
+                // Запасные данные, если сервер не отвечает
+                const genreSelect = document.getElementById('genreFilter');
+                const fallbackGenres = ['Драма', 'Комедия', 'Боевик', 'Фантастика', 'Триллер', 'Ужасы'];
+                fallbackGenres.forEach(genre => {
+                    genreSelect.innerHTML += `<option value="${genre}">${genre}</option>`;
+                });
+                
+                const yearSelect = document.getElementById('yearFilter');
+                for (let y = 2024; y >= 2010; y--) {
+                    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+                }
+            }
+        }
+
+        // Выполнение поиска
+        async function performSearch() {
+            const params = new URLSearchParams();
+            params.append('query', document.getElementById('mainSearchInput').value);
+            params.append('type', document.getElementById('typeFilter').value);
+            params.append('genre', document.getElementById('genreFilter').value);
+            params.append('year', document.getElementById('yearFilter').value);
+            params.append('person', document.getElementById('personFilter').value);
+            params.append('description', document.getElementById('descriptionFilter').value);
+            
+            const selectedAge = document.querySelector('input[name="age"]:checked');
+            if (selectedAge) params.append('age', selectedAge.value);
+            
+            try {
+                const response = await fetch(`/api/search?${params.toString()}`);
+                if (!response.ok) throw new Error('Ошибка поиска');
+                const data = await response.json();
+                
+                updateResultsCount(data.total);
+                renderResults(data.results);
+            } catch (error) {
+                console.error('Ошибка поиска:', error);
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Ошибка подключения к серверу. Убедитесь, что сервер запущен.</p>
+                        <p style="font-size:0.8rem; margin-top:10px;">Запустите: node server.js</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateResultsCount(count) {
+            const span = document.querySelector('#resultsCount span');
+            if (span) span.textContent = count;
+        }
+
+        function renderResults(results) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (!results || results.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <p>Ничего не найдено. Попробуйте изменить параметры поиска.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="search-results-grid">
+                    ${results.map(item => `
+                        <div class="result-card" onclick="location.href='/${item.contentType}/${item.id}'">
+                            <div class="result-poster">
+                                <img src="${item.poster || 'https://via.placeholder.com/300x450/1a1a1a/666?text=Нет+изображения'}" alt="${item.title}">
+                                <span class="result-type ${item.contentType}">${item.contentType === 'movie' ? '🎬 Фильм' : '📺 Сериал'}</span>
+                                <span class="result-rating"><i class="fas fa-star"></i> ${item.rating}</span>
+                            </div>
+                            <div class="result-info">
+                                <div class="result-title">${escapeHtml(item.title)}</div>
+                                <div class="result-meta">
+                                    <span>${item.year}</span>
+                                    <span>${item.ageRating || '0+'}</span>
+                                </div>
+                                <div class="result-genre">${item.genres ? item.genres.slice(0, 2).join(', ') : ''}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Защита от XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Debounce для предотвращения частых запросов
+        function debounceSearch() {
+            if (currentSearchTimeout) clearTimeout(currentSearchTimeout);
+            currentSearchTimeout = setTimeout(performSearch, 300);
+        }
+
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            document.getElementById('mainSearchInput').addEventListener('input', debounceSearch);
+            document.getElementById('typeFilter').addEventListener('change', performSearch);
+            document.getElementById('genreFilter').addEventListener('change', performSearch);
+            document.getElementById('yearFilter').addEventListener('change', performSearch);
+            document.getElementById('personFilter').addEventListener('input', debounceSearch);
+            document.getElementById('descriptionFilter').addEventListener('input', debounceSearch);
+            
+            // Обработчики для возрастных ограничений
+            document.querySelectorAll('.age-option').forEach(opt => {
+                opt.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const radio = this.querySelector('input');
+                    if (radio) {
+                        radio.checked = true;
+                        document.querySelectorAll('.age-option').forEach(o => o.classList.remove('active'));
+                        this.classList.add('active');
+                        performSearch();
+                    }
+                });
+            });
+            
+            // Сброс всех фильтров
+            document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+                document.getElementById('mainSearchInput').value = '';
+                document.getElementById('typeFilter').value = 'all';
+                document.getElementById('genreFilter').value = 'all';
+                document.getElementById('yearFilter').value = 'all';
+                document.getElementById('personFilter').value = '';
+                document.getElementById('descriptionFilter').value = '';
+                
+                const allRadio = document.querySelector('input[value="all"]');
+                if (allRadio) {
+                    allRadio.checked = true;
+                    document.querySelectorAll('.age-option').forEach(o => o.classList.remove('active'));
+                    document.querySelector('.age-option[data-age="all"]')?.classList.add('active');
+                }
+                performSearch();
+            });
+        }
+
+        // Мобильное меню и поиск
+        function setupMobileMenu() {
+            const mobileToggle = document.getElementById('mobileMenuToggle');
+            const mobileNav = document.getElementById('mobileNav');
+            const searchToggle = document.getElementById('searchToggle');
+            const searchBar = document.getElementById('searchBar');
+            const closeSearch = document.getElementById('closeSearch');
+            
+            if (mobileToggle && mobileNav) {
+                mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('active'));
+            }
+            if (searchToggle && searchBar) {
+                searchToggle.addEventListener('click', () => searchBar.classList.toggle('active'));
+            }
+            if (closeSearch && searchBar) {
+                closeSearch.addEventListener('click', () => searchBar.classList.remove('active'));
+            }
+        }
+
+        // Инициализация
+        async function init() {
+            setupMobileMenu();
+            setupEventListeners();
+            await loadFilters();
+            await performSearch();
+        }
+        
+        init();
+    </script>
+</body>
+</html>
