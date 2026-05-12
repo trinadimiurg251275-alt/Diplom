@@ -105,13 +105,13 @@
             {id:3, title:"Сёгун", year:"2024", rating:"9.0"}
         ];
 
-        function renderGrid(id, items, type) {
+        function renderGrid(id, items, type, pageFile) {
             const container = document.getElementById(id);
             if(!container) return;
             container.innerHTML = items.map(item => `
-                <div class="movie-card" onclick="location.href='/${type}/${item.id}'">
+                <div class="movie-card" onclick="location.href='${pageFile}?id=${item.id}'">
                     <div class="movie-poster">
-                        <img src="/api/banner/${type}/${item.id}" alt="${item.title}" style="background:#1a1a1a;">
+                        <img src="/banners/${type}s/${item.id}.svg" alt="${item.title}" onerror="this.src='/banners/placeholder.jpg'" style="background:#1a1a1a;">
                         <div class="movie-rating"><i class="fas fa-star"></i> ${item.rating}</div>
                     </div>
                     <div class="movie-info"><h3>${item.title}</h3><div>${item.year}</div></div>
@@ -119,8 +119,8 @@
             `).join('');
         }
 
-        renderGrid('moviesGrid', movies, 'movie');
-        renderGrid('seriesGridHome', series, 'series');
+        renderGrid('moviesGrid', movies, 'movie', 'movie-detail.html');
+        renderGrid('seriesGridHome', series, 'series', 'series-detail.html');
 
         // Мобильное меню
         const mobileToggle = document.getElementById('mobileMenuToggle');
